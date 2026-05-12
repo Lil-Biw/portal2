@@ -1,0 +1,86 @@
+<div class="app" [class.admin]="mode() === 'admin'" [class.consumidor]="mode() === 'consumidor'">
+  <header class="topbar">
+    <app-topbar [mode]="mode()" (userToggle)="toggleMode()"></app-topbar>
+  </header>
+
+  <div class="page">
+    <aside class="sidebar">
+      <app-sidebar [mode]="mode()" [selectedItem]="selectedItem" (selectedItemChange)="onSidebarSelection($event)"></app-sidebar>
+    </aside>
+
+    <main class="workspace">
+      <app-workspace 
+        [mode]="mode()" 
+        [selectedItem]="selectedItem" 
+        [workspaceAction]="workspaceAction"
+        [clienteForm]="clienteForm"
+        [clientes]="clientes"
+        [clienteLookupId]="clienteLookupId"
+        [clienteEditId]="clienteEditId"
+        [clienteEliminarId]="clienteEliminarId"
+        [clienteEncontrado]="clienteEncontrado"
+        [centroForm]="centroForm"
+        [centros]="centros"
+        [centroLookupId]="centroLookupId"
+        [centroEditId]="centroEditId"
+        [centroEliminarId]="centroEliminarId"
+        [centroEncontrado]="centroEncontrado"
+        [proyectoForm]="proyectoForm"
+        [proyectos]="proyectos"
+        [proyectoLookupId]="proyectoLookupId"
+        [proyectoEditId]="proyectoEditId"
+        [proyectoEliminarId]="proyectoEliminarId"
+        [proyectoEncontrado]="proyectoEncontrado"
+        [usuarioForm]="usuarioForm"
+        [usuarios]="usuarios"
+        [usuarioLookupId]="usuarioLookupId"
+        [usuarioEditId]="usuarioEditId"
+        [usuarioEliminarId]="usuarioEliminarId"
+        [usuarioEncontrado]="usuarioEncontrado"
+        [status]="status"
+        (actionChange)="onWorkspaceActionChange($event)"
+        (buscarCliente)="buscarCliente()"
+        (crearCliente)="crearCliente()"
+        (actualizarCliente)="actualizarCliente()"
+        (eliminarCliente)="eliminarCliente()"
+        (clienteSelectionChange)="onClienteSelectionChange($event)"
+        (clienteFormChange)="clienteForm = $event"
+        (clienteLookupIdChange)="clienteLookupId = $event"
+        (clienteEliminarIdChange)="clienteEliminarId = $event"
+        (buscarCentro)="buscarCentro()"
+        (crearCentro)="crearCentro()"
+        (actualizarCentro)="actualizarCentro()"
+        (eliminarCentro)="eliminarCentro()"
+        (centroSelectionChange)="onCentroSelectionChange($event)"
+        (centroFormChange)="centroForm = $event"
+        (centroLookupIdChange)="centroLookupId = $event"
+        (centroEliminarIdChange)="centroEliminarId = $event"
+        (buscarProyecto)="buscarProyecto()"
+        (crearProyecto)="crearProyecto()"
+        (actualizarProyecto)="actualizarProyecto()"
+        (eliminarProyecto)="eliminarProyecto()"
+        (proyectoSelectionChange)="onProyectoSelectionChange($event)"
+        (proyectoFormChange)="proyectoForm = $event"
+        (proyectoLookupIdChange)="proyectoLookupId = $event"
+        (proyectoEliminarIdChange)="proyectoEliminarId = $event"
+        (buscarUsuario)="buscarUsuario()"
+        (crearUsuario)="crearUsuario()"
+        (actualizarUsuario)="actualizarUsuario()"
+        (eliminarUsuario)="eliminarUsuario()"
+        (usuarioSelectionChange)="onUsuarioSelectionChange($event)"
+        (usuarioFormChange)="usuarioForm = $event"
+        (usuarioLookupIdChange)="usuarioLookupId = $event"
+        (usuarioEliminarIdChange)="usuarioEliminarId = $event"
+        [documentosEmpresa]="documentosEmpresa"
+        [documentosCentro]="documentosCentro"
+        [documentosProyecto]="documentosProyecto"
+        [uploadStatus]="uploadStatus"
+        (archivoSeleccionado)="onArchivoSeleccionado($event)"
+        (descargarDocumento)="descargarDocumento($event)"
+        (eliminarDocumento)="eliminarDocumento($event)"
+      ></app-workspace>
+    </main>
+  </div>
+</div>
+
+<router-outlet></router-outlet>

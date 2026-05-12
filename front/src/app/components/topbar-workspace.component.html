@@ -1,0 +1,16 @@
+<header class="workspace-topbar">
+  <div class="workspace-topbar-head">
+    <div>
+      <p class="eyebrow">Topbar-Workspace</p>
+      <h2>{{ title }}</h2>
+    </div>
+
+    <div class="workspace-actions">
+        <button class="ghost" [class.active]="workspaceAction==='crear'" (click)="setAction('crear')" type="button">Crear</button>
+        <button class="ghost" [class.active]="workspaceAction==='editar'" (click)="setAction('editar')" type="button">Editar</button>
+        <button class="ghost" [class.active]="workspaceAction==='eliminar'" (click)="setAction('eliminar')" type="button">Eliminar</button>
+        <button class="ghost" [class.active]="workspaceAction==='buscar'" (click)="setAction('buscar')" type="button">Buscar</button>
+        <!-- Document button removed; upload available from sidebar.Documentos -->
+      </div>
+  </div>
+</header>

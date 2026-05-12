@@ -1,0 +1,18 @@
+<section class="sidebar-shell">
+  <div class="sidebar-content-box">
+    <div class="brand">
+      <img src="/assets/smart-clarity-pill.png" alt="Smart Clarity" class="brand-logo" />
+    </div>
+    <nav class="menu">
+      <button
+        *ngFor="let item of menuItems; let isFirst = first"
+        type="button"
+        class="menu-item"
+        [class.active]="selectedItem === item"
+        (click)="select(item)"
+      >
+        <span>{{ item }}</span>
+      </button>
+    </nav>
+  </div>
+</section>

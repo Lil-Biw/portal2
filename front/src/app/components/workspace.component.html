@@ -1,0 +1,391 @@
+<section class="workspace-shell">
+  <app-topbar-workspace [mode]="mode" [selectedItem]="selectedItem" [workspaceAction]="workspaceAction" (actionChange)="onActionChange($event)"></app-topbar-workspace>
+  <section class="workspace-content">
+    <!-- ===== EMPRESAS CRUD ===== -->
+    <ng-container *ngIf="selectedItem==='Empresa'">
+      <!-- Crear -->
+      <ng-container *ngIf="workspaceAction==='crear'; else empresaNotCrear">
+        <app-empresas-create></app-empresas-create>
+      </ng-container>
+      <!-- Editar -->
+      <ng-template #empresaNotCrear>
+        <ng-container *ngIf="workspaceAction==='editar'; else empresaNotEditar">
+          <div class="tab-head">
+            <h2>Editar empresa</h2>
+            <div class="actions">
+              <button class="ghost" (click)="buscarCliente.emit()">Refrescar</button>
+              <button class="ghost primary" (click)="buscarCliente.emit()" [disabled]="!clienteLookupId">Buscar</button>
+              <button class="ghost primary" (click)="actualizarCliente.emit()" [disabled]="!clienteEditId">Actualizar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label><span>Selecciona empresa</span><select [(ngModel)]="clienteLookupId" (ngModelChange)="clienteSelectionChange.emit($event)"><option value="">Selecciona una empresa</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
+            <label><span>Buscar por ID</span><input [(ngModel)]="clienteLookupId" (ngModelChange)="updateClienteLookupId($event)" placeholder="ID" /></label>
+            <label><span>Razon social</span><input [(ngModel)]="clienteForm.razon_social" (ngModelChange)="updateClienteForm()" /></label>
+            <label><span>RUT</span><input [(ngModel)]="clienteForm.rut" (ngModelChange)="updateClienteForm()" /></label>
+            <label><span>Email</span><input [(ngModel)]="clienteForm.email_contacto" (ngModelChange)="updateClienteForm()" type="email" /></label>
+            <label><span>Teléfono</span><input [(ngModel)]="clienteForm.telefono" (ngModelChange)="updateClienteForm()" /></label>
+            <label><span>Calle</span><input [(ngModel)]="clienteForm.direccion.calle" (ngModelChange)="updateClienteForm()" /></label>
+            <label><span>Ciudad</span><input [(ngModel)]="clienteForm.direccion.ciudad" (ngModelChange)="updateClienteForm()" /></label>
+            <label><span>Región</span><input [(ngModel)]="clienteForm.direccion.region" (ngModelChange)="updateClienteForm()" /></label>
+            <label><span>País</span><input [(ngModel)]="clienteForm.direccion.pais" (ngModelChange)="updateClienteForm()" /></label>
+          </div>
+          <div class="status" *ngIf="status.clientes" [class.error]="status.clientes.type === 'error'">{{ status.clientes.text }}</div>
+          <div class="item-card" *ngIf="clienteEncontrado"><strong>{{ clienteEncontrado?.razon_social }}</strong><p>{{ clienteEncontrado?.rut }} · {{ clienteEncontrado?.email_contacto }}</p><small>ID: {{ clienteEncontrado?._id }}</small></div>
+        </ng-container>
+      </ng-template>
+      <!-- Eliminar -->
+      <ng-template #empresaNotEditar>
+        <ng-container *ngIf="workspaceAction==='eliminar'; else empresaNotEliminar">
+          <div class="tab-head">
+            <h2>Eliminar empresa</h2>
+            <div class="actions">
+              <button class="ghost primary" (click)="eliminarCliente.emit()" [disabled]="!clienteEliminarId">Eliminar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label style="grid-column:1/-1"><span>Selecciona empresa a eliminar</span><select [(ngModel)]="clienteEliminarId" (ngModelChange)="updateClienteEliminarId($event)"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
+          </div>
+          <div class="status" *ngIf="status.clientes" [class.error]="status.clientes.type === 'error'">{{ status.clientes.text }}</div>
+        </ng-container>
+      </ng-template>
+      <!-- Buscar -->
+      <ng-template #empresaNotEliminar>
+        <ng-container *ngIf="workspaceAction==='buscar'">
+          <div class="tab-head">
+            <h2>Buscar empresa</h2>
+            <div class="actions">
+              <button class="ghost" (click)="buscarCliente.emit()">Listar</button>
+              <button class="ghost primary" (click)="buscarCliente.emit()">Buscar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label style="grid-column:1/-1"><span>Buscar por ID</span><input [(ngModel)]="clienteLookupId" (ngModelChange)="updateClienteLookupId($event)" /></label>
+          </div>
+          <div *ngIf="clientes.length > 0"><h3 style="margin:1rem 0 .5rem">Resultados ({{ clientes.length }})</h3><div class="item-card" *ngFor="let c of clientes"><strong>{{ c.razon_social }}</strong><p>{{ c.rut }} · {{ c.email_contacto }}</p><small>ID: {{ c._id }}</small></div></div>
+          <div class="item-card" *ngIf="clienteEncontrado"><strong>{{ clienteEncontrado?.razon_social }}</strong><p>{{ clienteEncontrado?.rut }} · {{ clienteEncontrado?.email_contacto }}</p><small>ID: {{ clienteEncontrado?._id }}</small></div>
+        </ng-container>
+      </ng-template>
+    </ng-container>
+
+    <!-- ===== CENTROS DE COSTOS CRUD ===== -->
+    <ng-container *ngIf="selectedItem==='Centro de costos'">
+      <!-- Crear -->
+      <ng-container *ngIf="workspaceAction==='crear'; else centroNotCrear">
+        <div class="tab-head">
+          <h2>Crear centro de costos</h2>
+          <div class="actions">
+            <button class="ghost" (click)="crearCentro.emit()">Crear</button>
+          </div>
+        </div>
+        <div class="grid two">
+          <label><span>Cliente</span><select [(ngModel)]="centroForm.cliente_id" (ngModelChange)="updateCentroForm()"><option value="">Selecciona cliente</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
+          <label><span>Código</span><input [(ngModel)]="centroForm.codigo" (ngModelChange)="updateCentroForm()" /></label>
+          <label><span>Nombre</span><input [(ngModel)]="centroForm.nombre" (ngModelChange)="updateCentroForm()" /></label>
+          <label><span>Descripción</span><input [(ngModel)]="centroForm.descripcion" (ngModelChange)="updateCentroForm()" /></label>
+          <label><span>Dirección</span><input [(ngModel)]="centroForm.ubicacion_direccion" (ngModelChange)="updateCentroForm()" /></label>
+          <label><span>Ciudad</span><input [(ngModel)]="centroForm.ubicacion_ciudad" (ngModelChange)="updateCentroForm()" /></label>
+          <label><span>Región</span><input [(ngModel)]="centroForm.ubicacion_region" (ngModelChange)="updateCentroForm()" /></label>
+          <label><span>País</span><input [(ngModel)]="centroForm.ubicacion_pais" (ngModelChange)="updateCentroForm()" /></label>
+        </div>
+        <div class="status" *ngIf="status.centros" [class.error]="status.centros.type === 'error'">{{ status.centros.text }}</div>
+      </ng-container>
+      <!-- Editar -->
+      <ng-template #centroNotCrear>
+        <ng-container *ngIf="workspaceAction==='editar'; else centroNotEditar">
+          <div class="tab-head">
+            <h2>Editar centro de costos</h2>
+            <div class="actions">
+              <button class="ghost primary" (click)="buscarCentro.emit()" [disabled]="!centroLookupId">Buscar</button>
+              <button class="ghost primary" (click)="actualizarCentro.emit()" [disabled]="!centroEditId">Actualizar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label><span>Selecciona centro</span><select [(ngModel)]="centroLookupId" (ngModelChange)="centroSelectionChange.emit($event)"><option value="">Selecciona</option><option *ngFor="let c of centros" [value]="c._id">{{ c.nombre }}</option></select></label>
+            <label><span>Buscar por ID</span><input [(ngModel)]="centroLookupId" (ngModelChange)="updateCentroLookupId($event)" /></label>
+            <label><span>Cliente</span><select [(ngModel)]="centroForm.cliente_id" (ngModelChange)="updateCentroForm()"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
+            <label><span>Código</span><input [(ngModel)]="centroForm.codigo" (ngModelChange)="updateCentroForm()" /></label>
+            <label><span>Nombre</span><input [(ngModel)]="centroForm.nombre" (ngModelChange)="updateCentroForm()" /></label>
+            <label><span>Descripción</span><input [(ngModel)]="centroForm.descripcion" (ngModelChange)="updateCentroForm()" /></label>
+            <label><span>Dirección</span><input [(ngModel)]="centroForm.ubicacion_direccion" (ngModelChange)="updateCentroForm()" /></label>
+            <label><span>Ciudad</span><input [(ngModel)]="centroForm.ubicacion_ciudad" (ngModelChange)="updateCentroForm()" /></label>
+            <label><span>Región</span><input [(ngModel)]="centroForm.ubicacion_region" (ngModelChange)="updateCentroForm()" /></label>
+            <label><span>País</span><input [(ngModel)]="centroForm.ubicacion_pais" (ngModelChange)="updateCentroForm()" /></label>
+          </div>
+          <div class="status" *ngIf="status.centros" [class.error]="status.centros.type === 'error'">{{ status.centros.text }}</div>
+          <div class="item-card" *ngIf="centroEncontrado"><strong>{{ centroEncontrado?.nombre }}</strong><p>{{ centroEncontrado?.codigo }} · {{ centroEncontrado?.descripcion }}</p><small>ID: {{ centroEncontrado?._id }}</small></div>
+        </ng-container>
+      </ng-template>
+      <!-- Eliminar -->
+      <ng-template #centroNotEditar>
+        <ng-container *ngIf="workspaceAction==='eliminar'; else centroNotEliminar">
+          <div class="tab-head">
+            <h2>Eliminar centro de costos</h2>
+            <div class="actions">
+              <button class="ghost primary" (click)="eliminarCentro.emit()" [disabled]="!centroEliminarId">Eliminar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label style="grid-column:1/-1"><span>Selecciona centro a eliminar</span><select [(ngModel)]="centroEliminarId" (ngModelChange)="updateCentroEliminarId($event)"><option value="">Selecciona</option><option *ngFor="let c of centros" [value]="c._id">{{ c.nombre }}</option></select></label>
+          </div>
+          <div class="status" *ngIf="status.centros" [class.error]="status.centros.type === 'error'">{{ status.centros.text }}</div>
+        </ng-container>
+      </ng-template>
+      <!-- Buscar -->
+      <ng-template #centroNotEliminar>
+        <ng-container *ngIf="workspaceAction==='buscar'">
+          <div class="tab-head">
+            <h2>Buscar centro de costos</h2>
+            <div class="actions">
+              <button class="ghost primary" (click)="buscarCentro.emit()">Buscar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label style="grid-column:1/-1"><span>Buscar por ID</span><input [(ngModel)]="centroLookupId" (ngModelChange)="updateCentroLookupId($event)" /></label>
+          </div>
+          <div *ngIf="centros.length > 0"><h3 style="margin:1rem 0 .5rem">Resultados ({{ centros.length }})</h3><div class="item-card" *ngFor="let c of centros"><strong>{{ c.nombre }}</strong><p>{{ c.codigo }} · {{ c.descripcion }}</p><small>ID: {{ c._id }}</small></div></div>
+          <div class="item-card" *ngIf="centroEncontrado"><strong>{{ centroEncontrado?.nombre }}</strong><p>{{ centroEncontrado?.codigo }} · {{ centroEncontrado?.descripcion }}</p><small>ID: {{ centroEncontrado?._id }}</small></div>
+        </ng-container>
+      </ng-template>
+    </ng-container>
+
+    <!-- ===== DOCUMENTOS ===== -->
+    <ng-container *ngIf="selectedItem === 'Documentos'">
+      <app-document-upload
+        [tipo]="'empresa'"
+        [clientes]="clientes"
+        [centros]="centros"
+        [proyectos]="proyectos"
+        [selectedEmpresa]="clienteLookupId"
+        [selectedCentro]="centroLookupId"
+        [selectedProyecto]="proyectoLookupId"
+        [documentos]="documentosEmpresa"
+        [uploadStatus]="uploadStatus.empresa"
+        (empresaChange)="clienteLookupId = $event"
+        (centroChange)="centroLookupId = $event"
+        (proyectoChange)="proyectoLookupId = $event"
+        (archivoSeleccionado)="archivoSeleccionado.emit($event)"
+        (descargar)="descargarDocumento.emit($event)"
+        (eliminar)="eliminarDocumento.emit($event)"
+      ></app-document-upload>
+    </ng-container>
+
+    <!-- ===== PROYECTOS CRUD ===== -->
+    <ng-container *ngIf="selectedItem==='Proyectos'">
+      <!-- Crear -->
+      <ng-container *ngIf="workspaceAction==='crear'; else proyectoNotCrear">
+        <div class="tab-head">
+          <h2>Crear proyecto</h2>
+          <div class="actions">
+            <button class="ghost" (click)="crearProyecto.emit()">Crear</button>
+          </div>
+        </div>
+        <div class="grid two">
+          <label><span>Cliente</span><select [(ngModel)]="proyectoForm.cliente_id" (ngModelChange)="updateProyectoForm()"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
+          <label><span>Centro de costos</span><select [(ngModel)]="proyectoForm.centro_costo_id" (ngModelChange)="updateProyectoForm()"><option value="">Selecciona</option><option *ngFor="let c of centros" [value]="c._id">{{ c.nombre }}</option></select></label>
+          <label><span>Código</span><input [(ngModel)]="proyectoForm.codigo" (ngModelChange)="updateProyectoForm()" /></label>
+          <label><span>Nombre</span><input [(ngModel)]="proyectoForm.nombre" (ngModelChange)="updateProyectoForm()" /></label>
+          <label><span>Estado</span><select [(ngModel)]="proyectoForm.estado" (ngModelChange)="updateProyectoForm()"><option value="borrador">Borrador</option><option value="activo">Activo</option><option value="cerrado">Cerrado</option></select></label>
+          <label><span>Fecha inicio</span><input [(ngModel)]="proyectoForm.fecha_inicio" (ngModelChange)="updateProyectoForm()" type="date" /></label>
+          <label><span>Fecha fin</span><input [(ngModel)]="proyectoForm.fecha_fin" (ngModelChange)="updateProyectoForm()" type="date" /></label>
+          <label style="grid-column:1/-1"><span>Descripción</span><input [(ngModel)]="proyectoForm.descripcion" (ngModelChange)="updateProyectoForm()" /></label>
+        </div>
+        <div class="status" *ngIf="status.proyectos" [class.error]="status.proyectos.type === 'error'">{{ status.proyectos.text }}</div>
+      </ng-container>
+      <!-- Editar -->
+      <ng-template #proyectoNotCrear>
+        <ng-container *ngIf="workspaceAction==='editar'; else proyectoNotEditar">
+          <div class="tab-head">
+            <h2>Editar proyecto</h2>
+            <div class="actions">
+              <button class="ghost primary" (click)="buscarProyecto.emit()" [disabled]="!proyectoLookupId">Buscar</button>
+              <button class="ghost primary" (click)="actualizarProyecto.emit()" [disabled]="!proyectoEditId">Actualizar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label><span>Selecciona proyecto</span><select [(ngModel)]="proyectoLookupId" (ngModelChange)="proyectoSelectionChange.emit($event)"><option value="">Selecciona</option><option *ngFor="let p of proyectos" [value]="p._id">{{ p.nombre }}</option></select></label>
+            <label><span>Buscar por ID</span><input [(ngModel)]="proyectoLookupId" (ngModelChange)="updateProyectoLookupId($event)" /></label>
+            <label><span>Cliente</span><select [(ngModel)]="proyectoForm.cliente_id" (ngModelChange)="updateProyectoForm()"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
+            <label><span>Centro de costos</span><select [(ngModel)]="proyectoForm.centro_costo_id" (ngModelChange)="updateProyectoForm()"><option value="">Selecciona</option><option *ngFor="let c of centros" [value]="c._id">{{ c.nombre }}</option></select></label>
+            <label><span>Código</span><input [(ngModel)]="proyectoForm.codigo" (ngModelChange)="updateProyectoForm()" /></label>
+            <label><span>Nombre</span><input [(ngModel)]="proyectoForm.nombre" (ngModelChange)="updateProyectoForm()" /></label>
+            <label><span>Estado</span><select [(ngModel)]="proyectoForm.estado" (ngModelChange)="updateProyectoForm()"><option value="borrador">Borrador</option><option value="activo">Activo</option><option value="cerrado">Cerrado</option></select></label>
+            <label><span>Fecha inicio</span><input [(ngModel)]="proyectoForm.fecha_inicio" (ngModelChange)="updateProyectoForm()" type="date" /></label>
+            <label><span>Fecha fin</span><input [(ngModel)]="proyectoForm.fecha_fin" (ngModelChange)="updateProyectoForm()" type="date" /></label>
+            <label style="grid-column:1/-1"><span>Descripción</span><input [(ngModel)]="proyectoForm.descripcion" (ngModelChange)="updateProyectoForm()" /></label>
+          </div>
+          <div class="status" *ngIf="status.proyectos" [class.error]="status.proyectos.type === 'error'">{{ status.proyectos.text }}</div>
+          <div class="item-card" *ngIf="proyectoEncontrado"><strong>{{ proyectoEncontrado?.nombre }}</strong><p>{{ proyectoEncontrado?.codigo }} · {{ proyectoEncontrado?.estado }}</p><small>ID: {{ proyectoEncontrado?._id }}</small></div>
+        </ng-container>
+      </ng-template>
+      <!-- Eliminar -->
+      <ng-template #proyectoNotEditar>
+        <ng-container *ngIf="workspaceAction==='eliminar'; else proyectoNotEliminar">
+          <div class="tab-head">
+            <h2>Eliminar proyecto</h2>
+            <div class="actions">
+              <button class="ghost primary" (click)="eliminarProyecto.emit()" [disabled]="!proyectoEliminarId">Eliminar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label style="grid-column:1/-1"><span>Selecciona proyecto a eliminar</span><select [(ngModel)]="proyectoEliminarId" (ngModelChange)="updateProyectoEliminarId($event)"><option value="">Selecciona</option><option *ngFor="let p of proyectos" [value]="p._id">{{ p.nombre }}</option></select></label>
+          </div>
+          <div class="status" *ngIf="status.proyectos" [class.error]="status.proyectos.type === 'error'">{{ status.proyectos.text }}</div>
+        </ng-container>
+      </ng-template>
+      <!-- Buscar -->
+      <ng-template #proyectoNotEliminar>
+        <ng-container *ngIf="workspaceAction==='buscar'">
+          <div class="tab-head">
+            <h2>Buscar proyecto</h2>
+            <div class="actions">
+              <button class="ghost primary" (click)="buscarProyecto.emit()">Buscar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label style="grid-column:1/-1"><span>Buscar por ID</span><input [(ngModel)]="proyectoLookupId" (ngModelChange)="updateProyectoLookupId($event)" /></label>
+          </div>
+          <div *ngIf="proyectos.length > 0"><h3 style="margin:1rem 0 .5rem">Resultados ({{ proyectos.length }})</h3><div class="item-card" *ngFor="let p of proyectos"><strong>{{ p.nombre }}</strong><p>{{ p.codigo }} · {{ p.estado }}</p><small>ID: {{ p._id }}</small></div></div>
+          <div class="item-card" *ngIf="proyectoEncontrado"><strong>{{ proyectoEncontrado?.nombre }}</strong><p>{{ proyectoEncontrado?.codigo }} · {{ proyectoEncontrado?.estado }}</p><small>ID: {{ proyectoEncontrado?._id }}</small></div>
+        </ng-container>
+      </ng-template>
+    </ng-container>
+
+    <!-- ===== USUARIOS CRUD ===== -->
+    <ng-container *ngIf="selectedItem==='Usuarios'">
+      <!-- Crear -->
+      <ng-container *ngIf="workspaceAction==='crear'; else usuarioNotCrear">
+        <div class="tab-head">
+          <h2>Crear usuario</h2>
+          <div class="actions">
+            <button class="ghost" (click)="crearUsuario.emit()">Crear</button>
+          </div>
+        </div>
+        <div class="grid two">
+          <label><span>Cliente</span><select [(ngModel)]="usuarioForm.cliente_id" (ngModelChange)="updateUsuarioForm()"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
+          <label><span>Nombre</span><input [(ngModel)]="usuarioForm.nombre" (ngModelChange)="updateUsuarioForm()" /></label>
+          <label><span>Email</span><input [(ngModel)]="usuarioForm.email" (ngModelChange)="updateUsuarioForm()" type="email" /></label>
+          <label><span>Password</span><input [(ngModel)]="usuarioForm.password" (ngModelChange)="updateUsuarioForm()" type="password" /></label>
+          <label><span>Rol</span><select [(ngModel)]="usuarioForm.rol" (ngModelChange)="updateUsuarioForm()"><option value="usuario">Usuario</option><option value="admin_cliente">Admin Cliente</option></select></label>
+          <label><span>Permiso por defecto</span><input [(ngModel)]="usuarioForm.permiso_acceso" readonly /></label>
+        </div>
+        <div class="status" *ngIf="status.usuarios" [class.error]="status.usuarios.type === 'error'">{{ status.usuarios.text }}</div>
+      </ng-container>
+      <!-- Editar -->
+      <ng-template #usuarioNotCrear>
+        <ng-container *ngIf="workspaceAction==='editar'; else usuarioNotEditar">
+          <div class="tab-head">
+            <h2>Editar usuario</h2>
+            <div class="actions">
+              <button class="ghost primary" (click)="buscarUsuario.emit()" [disabled]="!usuarioLookupId">Buscar</button>
+              <button class="ghost primary" (click)="actualizarUsuario.emit()" [disabled]="!usuarioEditId">Actualizar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label><span>Selecciona usuario</span><select [(ngModel)]="usuarioLookupId" (ngModelChange)="usuarioSelectionChange.emit($event)"><option value="">Selecciona</option><option *ngFor="let u of usuarios" [value]="u._id">{{ u.nombre }}</option></select></label>
+            <label><span>Buscar por ID</span><input [(ngModel)]="usuarioLookupId" (ngModelChange)="updateUsuarioLookupId($event)" /></label>
+            <label><span>Nombre</span><input [(ngModel)]="usuarioForm.nombre" (ngModelChange)="updateUsuarioForm()" /></label>
+            <label><span>Email</span><input [(ngModel)]="usuarioForm.email" (ngModelChange)="updateUsuarioForm()" type="email" /></label>
+            <label><span>Rol</span><select [(ngModel)]="usuarioForm.rol" (ngModelChange)="updateUsuarioForm()"><option value="usuario">Usuario</option><option value="admin_cliente">Admin Cliente</option></select></label>
+            <label><span>Permiso por defecto</span><input [(ngModel)]="usuarioForm.permiso_acceso" readonly /></label>
+          </div>
+          <div class="status" *ngIf="status.usuarios" [class.error]="status.usuarios.type === 'error'">{{ status.usuarios.text }}</div>
+          <div class="item-card" *ngIf="usuarioEncontrado"><strong>{{ usuarioEncontrado?.nombre }}</strong><p>{{ usuarioEncontrado?.email }} · {{ usuarioEncontrado?.rol }}</p><small>ID: {{ usuarioEncontrado?._id }}</small></div>
+        </ng-container>
+      </ng-template>
+      <!-- Eliminar -->
+      <ng-template #usuarioNotEditar>
+        <ng-container *ngIf="workspaceAction==='eliminar'; else usuarioNotEliminar">
+          <div class="tab-head">
+            <h2>Eliminar usuario</h2>
+            <div class="actions">
+              <button class="ghost primary" (click)="eliminarUsuario.emit()" [disabled]="!usuarioEliminarId">Eliminar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label style="grid-column:1/-1"><span>Selecciona usuario a eliminar</span><select [(ngModel)]="usuarioEliminarId" (ngModelChange)="updateUsuarioEliminarId($event)"><option value="">Selecciona</option><option *ngFor="let u of usuarios" [value]="u._id">{{ u.nombre }}</option></select></label>
+          </div>
+          <div class="status" *ngIf="status.usuarios" [class.error]="status.usuarios.type === 'error'">{{ status.usuarios.text }}</div>
+        </ng-container>
+      </ng-template>
+      <!-- Buscar -->
+      <ng-template #usuarioNotEliminar>
+        <ng-container *ngIf="workspaceAction==='buscar'">
+          <div class="tab-head">
+            <h2>Buscar usuario</h2>
+            <div class="actions">
+              <button class="ghost primary" (click)="buscarUsuario.emit()">Buscar</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label style="grid-column:1/-1"><span>Buscar por ID</span><input [(ngModel)]="usuarioLookupId" (ngModelChange)="updateUsuarioLookupId($event)" /></label>
+          </div>
+          <div *ngIf="usuarios.length > 0"><h3 style="margin:1rem 0 .5rem">Resultados ({{ usuarios.length }})</h3><div class="item-card" *ngFor="let u of usuarios"><strong>{{ u.nombre }}</strong><p>{{ u.email }} · {{ u.rol }}</p><small>ID: {{ u._id }}</small></div></div>
+          <div class="item-card" *ngIf="usuarioEncontrado"><strong>{{ usuarioEncontrado?.nombre }}</strong><p>{{ usuarioEncontrado?.email }} · {{ usuarioEncontrado?.rol }}</p><small>ID: {{ usuarioEncontrado?._id }}</small></div>
+        </ng-container>
+      </ng-template>
+    </ng-container>
+
+    <!-- Default view for non-admin or Resumen -->
+    <ng-container *ngIf="selectedItem === 'Resumen general'">
+      <div class="tab-head">
+        <h2>Resumen general</h2>
+        <div class="actions">
+          <button class="ghost primary" (click)="buscarCliente.emit(); buscarCentro.emit(); buscarProyecto.emit(); buscarUsuario.emit()">Actualizar todo</button>
+        </div>
+      </div>
+      <div class="summary-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;padding:1rem 0">
+        <div class="summary-card" style="border:1px solid rgba(34,33,33,.15);border-radius:12px;padding:1.5rem;background:rgba(255,255,255,.5)">
+          <h3 style="margin:0 0 1rem;font-size:1.1rem">Empresas ({{ clientes.length }})</h3>
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <div *ngIf="clientes.length === 0" style="color:var(--ink-500);font-size:0.9rem">Sin empresas cargadas</div>
+            <div *ngFor="let c of clientes" style="padding:0.75rem;background:rgba(255,255,255,.6);border-radius:8px;border-left:3px solid var(--accent,#0095d6)">
+              <strong>{{ c.razon_social }}</strong>
+              <p style="margin:0.25rem 0 0;font-size:0.85rem;color:var(--ink-600)">{{ c.rut }} · {{ c.email_contacto }}</p>
+              <small style="color:var(--ink-400)">{{ c._id }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-card" style="border:1px solid rgba(34,33,33,.15);border-radius:12px;padding:1.5rem;background:rgba(255,255,255,.5)">
+          <h3 style="margin:0 0 1rem;font-size:1.1rem">Centros de costos ({{ centros.length }})</h3>
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <div *ngIf="centros.length === 0" style="color:var(--ink-500);font-size:0.9rem">Sin centros cargados</div>
+            <div *ngFor="let c of centros" style="padding:0.75rem;background:rgba(255,255,255,.6);border-radius:8px;border-left:3px solid var(--accent,#0095d6)">
+              <strong>{{ c.nombre }}</strong>
+              <p style="margin:0.25rem 0 0;font-size:0.85rem;color:var(--ink-600)">{{ c.codigo }} · {{ c.descripcion }}</p>
+              <small style="color:var(--ink-400)">{{ c.ubicacion_ciudad }} {{ c.ubicacion_region }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-card" style="border:1px solid rgba(34,33,33,.15);border-radius:12px;padding:1.5rem;background:rgba(255,255,255,.5)">
+          <h3 style="margin:0 0 1rem;font-size:1.1rem">Proyectos ({{ proyectos.length }})</h3>
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <div *ngIf="proyectos.length === 0" style="color:var(--ink-500);font-size:0.9rem">Sin proyectos cargados</div>
+            <div *ngFor="let p of proyectos" style="padding:0.75rem;background:rgba(255,255,255,.6);border-radius:8px;border-left:3px solid var(--accent,#0095d6)">
+              <strong>{{ p.nombre }}</strong>
+              <p style="margin:0.25rem 0 0;font-size:0.85rem;color:var(--ink-600)">{{ p.codigo }} · {{ p.estado }}</p>
+              <small style="color:var(--ink-400)">{{ p._id }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-card" style="border:1px solid rgba(34,33,33,.15);border-radius:12px;padding:1.5rem;background:rgba(255,255,255,.5)">
+          <h3 style="margin:0 0 1rem;font-size:1.1rem">Usuarios ({{ usuarios.length }})</h3>
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <div *ngIf="usuarios.length === 0" style="color:var(--ink-500);font-size:0.9rem">Sin usuarios cargados</div>
+            <div *ngFor="let u of usuarios" style="padding:0.75rem;background:rgba(255,255,255,.6);border-radius:8px;border-left:3px solid var(--accent,#0095d6)">
+              <strong>{{ u.nombre }}</strong>
+              <p style="margin:0.25rem 0 0;font-size:0.85rem;color:var(--ink-600)">{{ u.email }} · {{ u.rol }}</p>
+              <small style="color:var(--ink-400)">{{ u._id }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="selectedItem !== 'Empresa' && selectedItem !== 'Centro de costos' && selectedItem !== 'Proyectos' && selectedItem !== 'Usuarios' && selectedItem !== 'Resumen general'">
+    </ng-container>
+  </section>
+</section>

@@ -1,0 +1,11 @@
+<div class="topbar-inner" [class.admin]="mode === 'admin'" [class.consumidor]="mode === 'consumidor'">
+  <div class="brand">
+    <img src="/assets/smart-clarity-clean.png" alt="Smart Clarity" class="portal-logo" />
+  </div>
+  <div class="topbar-actions">
+    <button type="button" class="user-btn" (click)="userToggle.emit()">
+      Usuario
+    </button>
+    <span class="mode-chip">{{ modeLabel }}</span>
+  </div>
+</div>
