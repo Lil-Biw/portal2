@@ -1,0 +1,10 @@
+{
+  "name": "eclariti-workspace",
+  "private": true,
+  "scripts": {
+    "start:dev": "cd portal-api && npm run start:dev",
+    "build:backend": "cd portal-api && npm run build",
+    "start:frontend": "cd PortalClientes && npm start",
+    "build:frontend": "cd PortalClientes && npm run build"
+  }
+}
