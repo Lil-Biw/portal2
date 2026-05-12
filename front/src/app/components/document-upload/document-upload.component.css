@@ -1,8 +1,16 @@
 :host{display:block}
 .upload-section{background:rgba(255,255,255,.5);padding:1rem;border-radius:12px;border:1px solid rgba(34,33,33,.08)}
+.upload-row{display:flex;align-items:flex-end;gap:.75rem;margin-bottom:1rem}
+.selector-group{display:flex;align-items:flex-end;gap:.75rem;flex:1}
+.selector-group label{display:flex;flex-direction:column;gap:.25rem;flex:1}
+.selector-group label span{font-size:.85rem;font-weight:600;color:var(--ink-600,#374151)}
+.selector-group select{padding:.65rem;border-radius:8px;border:1px solid rgba(34,33,33,.2);font-family:inherit;font-size:.95rem}
+.selector-group select:focus{outline:none;border-color:var(--accent,#0095d6);background:rgba(0,149,214,.02)}
 .upload-area{display:flex;align-items:center;gap:.75rem;margin:1rem 0}
 .documents-list{margin-top:1rem}
 .doc-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem;border-radius:8px;background:rgba(255,255,255,.6);margin-bottom:.5rem}
-button.ghost{padding:.5rem .85rem;border-radius:8px;border:1px solid rgba(34,33,33,.12);background:transparent;cursor:pointer}
+button.ghost{padding:.5rem .85rem;border-radius:8px;border:1px solid rgba(34,33,33,.12);background:transparent;cursor:pointer;white-space:nowrap}
+button.ghost:hover:not(:disabled){border-color:rgba(34,33,33,.4);background:rgba(255,255,255,.4)}
+button.ghost:disabled{opacity:.5;cursor:not-allowed}
 button.ghost.primary{background:var(--accent,#0095d6);color:#fff;border-color:var(--accent,#0095d6)}
 .error{color:#ef4444}

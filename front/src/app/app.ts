@@ -77,6 +77,7 @@ export class App implements OnInit {
     rol: 'usuario',
     permiso_acceso: 'ver',
   };
+  usuarioPermisosSeleccionados: string[] = [];
   usuarios: any[] = [];
   usuarioLookupId = '';
   usuarioEditId = '';
@@ -550,9 +551,64 @@ export class App implements OnInit {
     };
   }
 
+  private asId(value: any) {
+    return value?._id || value || '';
+  }
+
+  private centrosDeCliente(clienteId: string) {
+    if (!clienteId) return [];
+    return this.centros.filter((centro) => this.asId(centro.cliente_id) === clienteId);
+  }
+
+  protected centrosParaProyecto(clienteId: string) {
+    return this.centrosDeCliente(clienteId);
+  }
+
+  protected centrosParaUsuario(clienteId: string) {
+    return this.centrosDeCliente(clienteId);
+  }
+
+  onProyectoClienteChange(clienteId: string) {
+    const centrosDisponibles = this.centrosDeCliente(clienteId);
+    const centroActualValido = centrosDisponibles.some((centro) => this.asId(centro._id) === this.proyectoForm.centro_costo_id);
+
+    if (!centroActualValido) {
+      this.proyectoForm.centro_costo_id = '';
+    }
+  }
+
+  onUsuarioClienteChange(clienteId: string) {
+    this.usuarioPermisosSeleccionados = this.centrosDeCliente(clienteId).map((centro) => this.asId(centro._id));
+  }
+
+  private cargarPermisosUsuario(usuarioId: string) {
+    if (!usuarioId) {
+      this.usuarioPermisosSeleccionados = [];
+      return;
+    }
+
+    this.http.get<any>(`${this.apiBase}/permisos/usuario/${usuarioId}`, { headers: this.headers() }).subscribe({
+      next: (res) => {
+        const permisos = Array.isArray(res) ? res : [];
+        this.usuarioPermisosSeleccionados = permisos
+          .map((permiso: any) => this.asId(permiso?.centro_costo_id))
+          .filter(Boolean);
+      },
+      error: () => {
+        this.usuarioPermisosSeleccionados = [];
+      },
+    });
+  }
+
   crearProyecto() {
     if (!this.proyectoForm.cliente_id || !this.proyectoForm.nombre) {
       this.setStatus('proyectos', 'error', 'Cliente y nombre requeridos');
+      return;
+    }
+
+    const centrosDisponibles = this.centrosDeCliente(this.proyectoForm.cliente_id);
+    if (this.proyectoForm.centro_costo_id && !centrosDisponibles.some((centro) => this.asId(centro._id) === this.proyectoForm.centro_costo_id)) {
+      this.setStatus('proyectos', 'error', 'El centro seleccionado no pertenece a la empresa indicada');
       return;
     }
 
@@ -602,6 +658,12 @@ export class App implements OnInit {
   actualizarProyecto() {
     if (!this.proyectoEditId) {
       this.setStatus('proyectos', 'error', 'Selecciona un proyecto para editar');
+      return;
+    }
+
+    const centrosDisponibles = this.centrosDeCliente(this.proyectoForm.cliente_id);
+    if (this.proyectoForm.centro_costo_id && !centrosDisponibles.some((centro) => this.asId(centro._id) === this.proyectoForm.centro_costo_id)) {
+      this.setStatus('proyectos', 'error', 'El centro seleccionado no pertenece a la empresa indicada');
       return;
     }
 
@@ -692,6 +754,7 @@ export class App implements OnInit {
       next: () => {
         this.setStatus('usuarios', 'ok', 'Usuario creado correctamente');
         this.usuarioForm = { cliente_id: '', nombre: '', email: '', password: '', rol: 'usuario', permiso_acceso: 'ver' };
+        this.usuarioPermisosSeleccionados = [];
         this.cargarUsuarios();
       },
       error: (err) => {
@@ -723,6 +786,7 @@ export class App implements OnInit {
         this.usuarioEncontrado = res;
         this.usuarioEditId = res?._id;
         this.assignUsuarioForm(res);
+        this.cargarPermisosUsuario(res?._id);
         this.setStatus('usuarios', 'ok', 'Usuario encontrado');
       },
       error: (err) => {
@@ -737,11 +801,17 @@ export class App implements OnInit {
       return;
     }
 
+    const centrosDisponibles = this.centrosDeCliente(this.usuarioForm.cliente_id);
+    const permisos = Array.from(new Set(this.usuarioPermisosSeleccionados))
+      .filter((centroId) => centrosDisponibles.some((centro) => this.asId(centro._id) === centroId))
+      .map((centroId) => ({ centro_costo_id: centroId, tipo: this.usuarioForm.permiso_acceso }));
+
     const payload = {
       nombre: this.usuarioForm.nombre,
       email: this.usuarioForm.email,
       rol: this.usuarioForm.rol,
       permiso_acceso: this.usuarioForm.permiso_acceso,
+      permisos,
     };
 
     this.http.put<any>(`${this.apiBase}/usuarios/${this.usuarioEditId}`, payload, { headers: this.headers() }).subscribe({
@@ -751,6 +821,7 @@ export class App implements OnInit {
         this.usuarioEditId = '';
         this.usuarioEncontrado = null;
         this.usuarioLookupId = '';
+        this.usuarioPermisosSeleccionados = [];
       },
       error: (err) => {
         this.setStatus('usuarios', 'error', err?.error?.message || 'Error al actualizar usuario');
@@ -781,6 +852,7 @@ export class App implements OnInit {
     if (!usuarioId) {
       this.usuarioEditId = '';
       this.usuarioEncontrado = null;
+      this.usuarioPermisosSeleccionados = [];
       return;
     }
 
@@ -789,6 +861,7 @@ export class App implements OnInit {
       this.usuarioEncontrado = usuario;
       this.usuarioEditId = usuarioId;
       this.assignUsuarioForm(usuario);
+      this.cargarPermisosUsuario(usuarioId);
       this.setStatus('usuarios', 'ok', 'Usuario cargado');
     }
   }

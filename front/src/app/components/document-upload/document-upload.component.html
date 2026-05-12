@@ -1,74 +1,49 @@
 <div class="upload-section">
   <h3>Subir documentos</h3>
-  <div class="scope-select">
-    <label>
-      <input type="radio" name="scope" [(ngModel)]="scopeChoice" value="general" /> Documentos generales
-    </label>
-    <label>
-      <input type="radio" name="scope" [(ngModel)]="scopeChoice" value="empresa" /> Empresas
-    </label>
-    <label>
-      <input type="radio" name="scope" [(ngModel)]="scopeChoice" value="centro" /> Centros de costos
-    </label>
-    <label>
-      <input type="radio" name="scope" [(ngModel)]="scopeChoice" value="proyecto" /> Proyectos
-    </label>
-  </div>
-  <div class="grid two">
-    <label *ngIf="(scopeChoice === 'empresa' || tipo === 'empresa')">
-      Empresa
-      <select [(ngModel)]="selectedEmpresa" (ngModelChange)="empresaChange.emit($event)">
-        <option value="">Selecciona empresa destino</option>
-        <option *ngFor="let cliente of clientes" [value]="cliente._id">{{ cliente.razon_social || cliente.nombre }}</option>
-      </select>
-    </label>
 
-    <label *ngIf="tipo === 'centro'">
-      Empresa
-      <select [(ngModel)]="selectedEmpresa" (ngModelChange)="empresaChange.emit($event)">
-        <option value="">Selecciona empresa destino</option>
-        <option *ngFor="let cliente of clientes" [value]="cliente._id">{{ cliente.razon_social || cliente.nombre }}</option>
-      </select>
-    </label>
-
-    <label *ngIf="tipo === 'centro'">
-      Centro de costos
-      <select [(ngModel)]="selectedCentro" (ngModelChange)="centroChange.emit($event)">
-        <option value="">Selecciona centro destino</option>
-        <option *ngFor="let centro of centros" [value]="centro._id">{{ centro.nombre || centro.codigo }}</option>
-      </select>
-    </label>
-
-    <label *ngIf="tipo === 'proyecto'">
-      Empresa
-      <select [(ngModel)]="selectedEmpresa" (ngModelChange)="empresaChange.emit($event)">
-        <option value="">Selecciona empresa destino</option>
-        <option *ngFor="let cliente of clientes" [value]="cliente._id">{{ cliente.razon_social || cliente.nombre }}</option>
-      </select>
-    </label>
-
-    <label *ngIf="tipo === 'proyecto'">
-      Centro de costos
-      <select [(ngModel)]="selectedCentro" (ngModelChange)="centroChange.emit($event)">
-        <option value="">Selecciona centro destino</option>
-        <option *ngFor="let centro of centros" [value]="centro._id">{{ centro.nombre || centro.codigo }}</option>
-      </select>
-    </label>
-
-    <label *ngIf="tipo === 'proyecto'">
-      Proyecto
-      <select [(ngModel)]="selectedProyecto" (ngModelChange)="proyectoChange.emit($event)">
-        <option value="">Selecciona proyecto destino</option>
-        <option *ngFor="let p of proyectos" [value]="p._id">{{ p.nombre || p.codigo }}</option>
-      </select>
-    </label>
+  <!-- Empresa -->
+  <div class="upload-row">
+    <div class="selector-group">
+      <label><span>Empresa</span>
+        <select [(ngModel)]="selectedEmpresa" (ngModelChange)="onEmpresaChange($event)">
+          <option value="">Selecciona empresa</option>
+          <option *ngFor="let cliente of clientes" [value]="cliente._id">{{ cliente.razon_social || cliente.nombre }}</option>
+        </select>
+      </label>
+      <input type="file" accept=".pdf" #fileEmpresa (change)="onFileChangeEmpresa($event)" style="display:none" />
+      <button class="ghost" (click)="fileEmpresa.click()" [disabled]="!selectedEmpresa">Subir doc</button>
+    </div>
   </div>
 
-  <div class="upload-area">
-    <input type="file" accept=".pdf" #fileInput (change)="onFileChange($event)" style="display:none" />
-    <button class="ghost" (click)="fileInput.click()">Seleccionar PDF</button>
-    <span *ngIf="uploadStatus as status" [class.error]="status.type === 'error'">{{ status.text }}</span>
+  <!-- Centro de costos -->
+  <div class="upload-row">
+    <div class="selector-group">
+      <label><span>Centro de costos</span>
+        <select [(ngModel)]="selectedCentro" (ngModelChange)="onCentroChange($event)" [disabled]="!selectedEmpresa || centrosFiltrados.length === 0">
+          <option value="">{{ selectedEmpresa ? 'Selecciona centro' : 'Selecciona empresa primero' }}</option>
+          <option *ngFor="let centro of centrosFiltrados" [value]="centro._id">{{ centro.nombre }} ({{ centro.codigo }})</option>
+        </select>
+      </label>
+      <input type="file" accept=".pdf" #fileCentro (change)="onFileChangeCentro($event)" style="display:none" />
+      <button class="ghost" (click)="fileCentro.click()" [disabled]="!selectedEmpresa || !selectedCentro">Subir doc</button>
+    </div>
   </div>
+
+  <!-- Proyecto -->
+  <div class="upload-row">
+    <div class="selector-group">
+      <label><span>Proyecto</span>
+        <select [(ngModel)]="selectedProyecto" (ngModelChange)="proyectoChange.emit($event)" [disabled]="!selectedEmpresa || !selectedCentro || proyectosFiltrados.length === 0">
+          <option value="">{{ (!selectedEmpresa || !selectedCentro) ? 'Selecciona empresa y centro primero' : 'Selecciona proyecto' }}</option>
+          <option *ngFor="let p of proyectosFiltrados" [value]="p._id">{{ p.nombre }} ({{ p.codigo }})</option>
+        </select>
+      </label>
+      <input type="file" accept=".pdf" #fileProyecto (change)="onFileChangeProyecto($event)" style="display:none" />
+      <button class="ghost" (click)="fileProyecto.click()" [disabled]="!selectedEmpresa || !selectedCentro || !selectedProyecto">Subir doc</button>
+    </div>
+  </div>
+
+  <span *ngIf="uploadStatus as status" [class.error]="status.type === 'error'" style="display:block;margin-top:1rem">{{ status.text }}</span>
 
   <div class="documents-list" *ngIf="documentos && documentos.length">
     <h4>Documentos</h4>

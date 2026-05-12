@@ -52,6 +52,72 @@ export class DocumentUploadComponent implements OnInit {
     this.scopeChoice = this.tipo === 'empresa' ? 'empresa' : this.tipo;
   }
 
+  private asId(value: any) {
+    return value?._id || value || '';
+  }
+
+  get centrosFiltrados() {
+    if (!this.selectedEmpresa) return [];
+    return this.centros.filter((centro) => this.asId(centro.cliente_id) === this.selectedEmpresa);
+  }
+
+  get proyectosFiltrados() {
+    if (!this.selectedEmpresa || !this.selectedCentro) return [];
+    return this.proyectos.filter((p) => this.asId(p.cliente_id) === this.selectedEmpresa && this.asId(p.centro_costo_id) === this.selectedCentro);
+  }
+
+  onEmpresaChange(empresaId: string) {
+    this.selectedEmpresa = empresaId;
+    this.selectedCentro = '';
+    this.selectedProyecto = '';
+    this.empresaChange.emit(empresaId);
+  }
+
+  onCentroChange(centroId: string) {
+    this.selectedCentro = centroId;
+    this.selectedProyecto = '';
+    this.centroChange.emit(centroId);
+  }
+
+  onFileChangeEmpresa(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.selectedEmpresa) return;
+    this.archivoSeleccionado.emit({
+      file,
+      tipo: 'empresa',
+      selectedEmpresa: this.selectedEmpresa,
+    });
+    input.value = '';
+  }
+
+  onFileChangeCentro(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.selectedEmpresa || !this.selectedCentro) return;
+    this.archivoSeleccionado.emit({
+      file,
+      tipo: 'centro',
+      selectedEmpresa: this.selectedEmpresa,
+      selectedCentro: this.selectedCentro,
+    });
+    input.value = '';
+  }
+
+  onFileChangeProyecto(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.selectedEmpresa || !this.selectedCentro || !this.selectedProyecto) return;
+    this.archivoSeleccionado.emit({
+      file,
+      tipo: 'proyecto',
+      selectedEmpresa: this.selectedEmpresa,
+      selectedCentro: this.selectedCentro,
+      selectedProyecto: this.selectedProyecto,
+    });
+    input.value = '';
+  }
+
   onFileChange(ev: Event) {
     const input = ev.target as HTMLInputElement;
     const file = input.files?.[0];

@@ -3,12 +3,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ProyectoSchema } from './proyectos.schema';
 import { ProyectosController } from './proyectos.controller';
 import { ProyectosService } from './proyectos.service';
-import { PermisoSchema } from '../permisos/permisos.schema';
+import { CentroCostoSchema } from '../centros-costos/centros-costos.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Proyecto', schema: ProyectoSchema }]),
-    MongooseModule.forFeature([{ name: 'Permiso', schema: PermisoSchema }]),
+    MongooseModule.forFeature([
+      { name: 'Proyecto', schema: ProyectoSchema },
+      { name: 'CentroCosto', schema: CentroCostoSchema },
+    ]),
   ],
   controllers: [ProyectosController],
   providers: [ProyectosService],

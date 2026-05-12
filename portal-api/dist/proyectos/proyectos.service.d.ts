@@ -3,7 +3,9 @@ import { ProyectoDocument } from './proyectos.schema';
 import { CreateProyectoDto, UpdateProyectoDto, AgregarDocumentoProyectoDto } from './proyectos.dto';
 export declare class ProyectosService {
     private proyectoModel;
-    constructor(proyectoModel: Model<ProyectoDocument>);
+    private centroCostoModel;
+    constructor(proyectoModel: Model<ProyectoDocument>, centroCostoModel: Model<any>);
+    private validarCentroEnCliente;
     create(dto: CreateProyectoDto, creadoPor?: string): Promise<import("mongoose").Document<unknown, {}, ProyectoDocument, {}, {}> & import("./proyectos.schema").Proyecto & import("mongoose").Document<Types.ObjectId, any, any, Record<string, any>, {}> & Required<{
         _id: Types.ObjectId;
     }> & {

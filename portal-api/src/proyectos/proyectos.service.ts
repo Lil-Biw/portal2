@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ProyectoDocument } from './proyectos.schema';
@@ -6,7 +6,22 @@ import { CreateProyectoDto, UpdateProyectoDto, AgregarDocumentoProyectoDto } fro
 
 @Injectable()
 export class ProyectosService {
-  constructor(@InjectModel('Proyecto') private proyectoModel: Model<ProyectoDocument>) {}
+  constructor(
+    @InjectModel('Proyecto') private proyectoModel: Model<ProyectoDocument>,
+    @InjectModel('CentroCosto') private centroCostoModel: Model<any>,
+  ) {}
+
+  private async validarCentroEnCliente(cliente_id: string, centro_costo_id: string) {
+    const centro = await this.centroCostoModel.findOne({
+      _id: new Types.ObjectId(centro_costo_id),
+      cliente_id: new Types.ObjectId(cliente_id),
+      activo: true,
+    }).lean();
+
+    if (!centro) {
+      throw new BadRequestException('El centro seleccionado no pertenece a la empresa indicada');
+    }
+  }
 
   async create(dto: CreateProyectoDto, creadoPor?: string) {
     const existe = await this.proyectoModel.findOne({
@@ -14,6 +29,8 @@ export class ProyectosService {
       codigo: dto.codigo,
     });
     if (existe) throw new ConflictException(`Ya existe el código ${dto.codigo} en este centro de costos`);
+
+    await this.validarCentroEnCliente(dto.cliente_id, dto.centro_costo_id);
 
     const doc: any = {
       ...dto,
@@ -52,6 +69,13 @@ export class ProyectosService {
   }
 
   async update(id: string, dto: UpdateProyectoDto) {
+    const proyectoActual = await this.proyectoModel.findById(id).lean();
+    if (!proyectoActual) throw new NotFoundException(`Proyecto ${id} no encontrado`);
+
+    const clienteId = dto.cliente_id || proyectoActual.cliente_id.toString();
+    const centroCostoId = dto.centro_costo_id || proyectoActual.centro_costo_id.toString();
+    await this.validarCentroEnCliente(clienteId, centroCostoId);
+
     const proyecto = await this.proyectoModel
       .findByIdAndUpdate(id, dto, { new: true, runValidators: true })
       .lean();

@@ -53,9 +53,39 @@ const bcrypt = __importStar(require("bcryptjs"));
 const permisos_service_1 = require("../permisos/permisos.service");
 const SALT_ROUNDS = 10;
 let UsuariosService = class UsuariosService {
-    constructor(usuarioModel, permisosService) {
+    constructor(usuarioModel, centroCostoModel, permisosService) {
         this.usuarioModel = usuarioModel;
+        this.centroCostoModel = centroCostoModel;
         this.permisosService = permisosService;
+    }
+    async validarCentrosDeCliente(clienteId, permisos) {
+        if (!permisos || permisos.length === 0)
+            return;
+        const ids = permisos.map((permiso) => permiso.centro_costo_id);
+        const centros = await this.centroCostoModel.find({
+            _id: { $in: ids.map((id) => new mongoose_2.Types.ObjectId(id)) },
+            cliente_id: new mongoose_2.Types.ObjectId(clienteId),
+            activo: true,
+        }).lean();
+        if (centros.length !== ids.length) {
+            throw new common_1.BadRequestException('Uno o más centros no pertenecen a la empresa indicada');
+        }
+    }
+    async sincronizarPermisos(usuarioId, clienteId, permisos) {
+        if (permisos === undefined)
+            return;
+        await this.validarCentrosDeCliente(clienteId, permisos);
+        const permisosActuales = await this.permisosService.findByUsuario(usuarioId);
+        const permisosSeleccionados = new Map((permisos || []).map((permiso) => [permiso.centro_costo_id, permiso]));
+        for (const permisoActual of permisosActuales) {
+            const centroId = permisoActual?.centro_costo_id?._id?.toString?.() || permisoActual?.centro_costo_id?.toString?.() || '';
+            if (!permisosSeleccionados.has(centroId)) {
+                await this.permisosService.revocar(usuarioId, centroId);
+            }
+        }
+        for (const permiso of permisos || []) {
+            await this.permisosService.asignar({ usuario_id: usuarioId, centro_costo_id: permiso.centro_costo_id, tipo: permiso.tipo }, usuarioId, clienteId);
+        }
     }
     async create(dto) {
         const existe = await this.usuarioModel.findOne({ email: dto.email });
@@ -66,11 +96,7 @@ let UsuariosService = class UsuariosService {
         const permisoPorDefecto = permiso_acceso || (rest.rol === 'admin_cliente' ? 'editar' : 'ver');
         const usuario = new this.usuarioModel({ ...rest, permiso_acceso: permisoPorDefecto, password_hash });
         const saved = await usuario.save();
-        if (permisos && permisos.length > 0) {
-            for (const permiso of permisos) {
-                await this.permisosService.asignar({ usuario_id: saved._id.toString(), centro_costo_id: permiso.centro_costo_id, tipo: permiso.tipo }, saved._id.toString(), rest.cliente_id.toString());
-            }
-        }
+        await this.sincronizarPermisos(saved._id.toString(), rest.cliente_id.toString(), permisos);
         const { password_hash: _, ...result } = saved.toObject();
         return result;
     }
@@ -102,6 +128,7 @@ let UsuariosService = class UsuariosService {
             .lean();
         if (!usuario)
             throw new common_1.NotFoundException(`Usuario ${id} no encontrado`);
+        await this.sincronizarPermisos(id, usuario.cliente_id.toString(), dto.permisos);
         return usuario;
     }
     async remove(id) {
@@ -117,7 +144,9 @@ exports.UsuariosService = UsuariosService;
 exports.UsuariosService = UsuariosService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)('Usuario')),
+    __param(1, (0, mongoose_1.InjectModel)('CentroCosto')),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         permisos_service_1.PermisosService])
 ], UsuariosService);
 //# sourceMappingURL=usuarios.service.js.map

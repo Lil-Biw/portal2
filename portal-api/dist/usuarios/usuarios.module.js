@@ -13,13 +13,17 @@ const usuarios_schema_1 = require("./usuarios.schema");
 const usuarios_controller_1 = require("./usuarios.controller");
 const usuarios_service_1 = require("./usuarios.service");
 const permisos_module_1 = require("../permisos/permisos.module");
+const centros_costos_schema_1 = require("../centros-costos/centros-costos.schema");
 let UsuariosModule = class UsuariosModule {
 };
 exports.UsuariosModule = UsuariosModule;
 exports.UsuariosModule = UsuariosModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forFeature([{ name: 'Usuario', schema: usuarios_schema_1.UsuarioSchema }]),
+            mongoose_1.MongooseModule.forFeature([
+                { name: 'Usuario', schema: usuarios_schema_1.UsuarioSchema },
+                { name: 'CentroCosto', schema: centros_costos_schema_1.CentroCostoSchema },
+            ]),
             permisos_module_1.PermisosModule,
         ],
         controllers: [usuarios_controller_1.UsuariosController],

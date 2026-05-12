@@ -67,7 +67,6 @@
         </ng-container>
       </ng-template>
     </ng-container>
-
     <!-- ===== CENTROS DE COSTOS CRUD ===== -->
     <ng-container *ngIf="selectedItem==='Centro de costos'">
       <!-- Crear -->
@@ -180,9 +179,9 @@
             <button class="ghost" (click)="crearProyecto.emit()">Crear</button>
           </div>
         </div>
-        <div class="grid two">
-          <label><span>Cliente</span><select [(ngModel)]="proyectoForm.cliente_id" (ngModelChange)="updateProyectoForm()"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
-          <label><span>Centro de costos</span><select [(ngModel)]="proyectoForm.centro_costo_id" (ngModelChange)="updateProyectoForm()"><option value="">Selecciona</option><option *ngFor="let c of centros" [value]="c._id">{{ c.nombre }}</option></select></label>
+          <div class="grid two">
+          <label><span>Cliente</span><select [(ngModel)]="proyectoForm.cliente_id" (ngModelChange)="onProyectoClienteChange($event)"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
+          <label><span>Centro de costos</span><select [(ngModel)]="proyectoForm.centro_costo_id" (ngModelChange)="updateProyectoForm()" [disabled]="!proyectoForm.cliente_id || centrosProyecto.length === 0"><option value="">{{ proyectoForm.cliente_id ? 'Selecciona' : 'Selecciona empresa primero' }}</option><option *ngFor="let c of centrosProyecto" [value]="c._id">{{ c.nombre }}</option></select></label>
           <label><span>Código</span><input [(ngModel)]="proyectoForm.codigo" (ngModelChange)="updateProyectoForm()" /></label>
           <label><span>Nombre</span><input [(ngModel)]="proyectoForm.nombre" (ngModelChange)="updateProyectoForm()" /></label>
           <label><span>Estado</span><select [(ngModel)]="proyectoForm.estado" (ngModelChange)="updateProyectoForm()"><option value="borrador">Borrador</option><option value="activo">Activo</option><option value="cerrado">Cerrado</option></select></label>
@@ -205,8 +204,8 @@
           <div class="grid two">
             <label><span>Selecciona proyecto</span><select [(ngModel)]="proyectoLookupId" (ngModelChange)="proyectoSelectionChange.emit($event)"><option value="">Selecciona</option><option *ngFor="let p of proyectos" [value]="p._id">{{ p.nombre }}</option></select></label>
             <label><span>Buscar por ID</span><input [(ngModel)]="proyectoLookupId" (ngModelChange)="updateProyectoLookupId($event)" /></label>
-            <label><span>Cliente</span><select [(ngModel)]="proyectoForm.cliente_id" (ngModelChange)="updateProyectoForm()"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
-            <label><span>Centro de costos</span><select [(ngModel)]="proyectoForm.centro_costo_id" (ngModelChange)="updateProyectoForm()"><option value="">Selecciona</option><option *ngFor="let c of centros" [value]="c._id">{{ c.nombre }}</option></select></label>
+            <label><span>Cliente</span><select [(ngModel)]="proyectoForm.cliente_id" (ngModelChange)="onProyectoClienteChange($event)"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
+            <label><span>Centro de costos</span><select [(ngModel)]="proyectoForm.centro_costo_id" (ngModelChange)="updateProyectoForm()" [disabled]="!proyectoForm.cliente_id || centrosProyecto.length === 0"><option value="">{{ proyectoForm.cliente_id ? 'Selecciona' : 'Selecciona empresa primero' }}</option><option *ngFor="let c of centrosProyecto" [value]="c._id">{{ c.nombre }}</option></select></label>
             <label><span>Código</span><input [(ngModel)]="proyectoForm.codigo" (ngModelChange)="updateProyectoForm()" /></label>
             <label><span>Nombre</span><input [(ngModel)]="proyectoForm.nombre" (ngModelChange)="updateProyectoForm()" /></label>
             <label><span>Estado</span><select [(ngModel)]="proyectoForm.estado" (ngModelChange)="updateProyectoForm()"><option value="borrador">Borrador</option><option value="activo">Activo</option><option value="cerrado">Cerrado</option></select></label>
@@ -262,12 +261,24 @@
           </div>
         </div>
         <div class="grid two">
-          <label><span>Cliente</span><select [(ngModel)]="usuarioForm.cliente_id" (ngModelChange)="updateUsuarioForm()"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
+          <label><span>Cliente</span><select [(ngModel)]="usuarioForm.cliente_id" (ngModelChange)="onUsuarioClienteChange($event)"><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
           <label><span>Nombre</span><input [(ngModel)]="usuarioForm.nombre" (ngModelChange)="updateUsuarioForm()" /></label>
           <label><span>Email</span><input [(ngModel)]="usuarioForm.email" (ngModelChange)="updateUsuarioForm()" type="email" /></label>
           <label><span>Password</span><input [(ngModel)]="usuarioForm.password" (ngModelChange)="updateUsuarioForm()" type="password" /></label>
           <label><span>Rol</span><select [(ngModel)]="usuarioForm.rol" (ngModelChange)="updateUsuarioForm()"><option value="usuario">Usuario</option><option value="admin_cliente">Admin Cliente</option></select></label>
           <label><span>Permiso por defecto</span><input [(ngModel)]="usuarioForm.permiso_acceso" readonly /></label>
+          <div style="grid-column:1/-1">
+            <span style="display:block;margin-bottom:.5rem;font-size:.85rem;font-weight:600;color:var(--ink-600,#374151)">Centros de costos de la empresa</span>
+            <div *ngIf="centrosUsuario.length > 0; else sinCentrosUsuario" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem">
+              <label *ngFor="let centro of centrosUsuario" style="flex-direction:row;align-items:center;gap:.5rem;padding:.65rem .75rem;border:1px solid rgba(34,33,33,.15);border-radius:8px;background:#fff">
+                <input type="checkbox" [checked]="usuarioPermisosSeleccionados.includes(centro._id)" (change)="toggleUsuarioCentro(centro._id, $event)" />
+                <span>{{ centro.nombre }} <small>({{ centro.codigo }})</small></span>
+              </label>
+            </div>
+            <ng-template #sinCentrosUsuario>
+              <div style="color:var(--ink-500);font-size:.9rem">La empresa no tiene centros de costos asociados.</div>
+            </ng-template>
+          </div>
         </div>
         <div class="status" *ngIf="status.usuarios" [class.error]="status.usuarios.type === 'error'">{{ status.usuarios.text }}</div>
       </ng-container>
@@ -284,10 +295,23 @@
           <div class="grid two">
             <label><span>Selecciona usuario</span><select [(ngModel)]="usuarioLookupId" (ngModelChange)="usuarioSelectionChange.emit($event)"><option value="">Selecciona</option><option *ngFor="let u of usuarios" [value]="u._id">{{ u.nombre }}</option></select></label>
             <label><span>Buscar por ID</span><input [(ngModel)]="usuarioLookupId" (ngModelChange)="updateUsuarioLookupId($event)" /></label>
+            <label><span>Cliente</span><select [(ngModel)]="usuarioForm.cliente_id" disabled><option value="">Selecciona</option><option *ngFor="let c of clientes" [value]="c._id">{{ c.razon_social }}</option></select></label>
             <label><span>Nombre</span><input [(ngModel)]="usuarioForm.nombre" (ngModelChange)="updateUsuarioForm()" /></label>
             <label><span>Email</span><input [(ngModel)]="usuarioForm.email" (ngModelChange)="updateUsuarioForm()" type="email" /></label>
             <label><span>Rol</span><select [(ngModel)]="usuarioForm.rol" (ngModelChange)="updateUsuarioForm()"><option value="usuario">Usuario</option><option value="admin_cliente">Admin Cliente</option></select></label>
             <label><span>Permiso por defecto</span><input [(ngModel)]="usuarioForm.permiso_acceso" readonly /></label>
+            <div style="grid-column:1/-1">
+              <span style="display:block;margin-bottom:.5rem;font-size:.85rem;font-weight:600;color:var(--ink-600,#374151)">Centros de costos de la empresa</span>
+              <div *ngIf="centrosUsuario.length > 0; else sinCentrosUsuarioEdit" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem">
+                <label *ngFor="let centro of centrosUsuario" style="flex-direction:row;align-items:center;gap:.5rem;padding:.65rem .75rem;border:1px solid rgba(34,33,33,.15);border-radius:8px;background:#fff">
+                  <input type="checkbox" [checked]="usuarioPermisosSeleccionados.includes(centro._id)" (change)="toggleUsuarioCentro(centro._id, $event)" />
+                  <span>{{ centro.nombre }} <small>({{ centro.codigo }})</small></span>
+                </label>
+              </div>
+              <ng-template #sinCentrosUsuarioEdit>
+                <div style="color:var(--ink-500);font-size:.9rem">La empresa no tiene centros de costos asociados.</div>
+              </ng-template>
+            </div>
           </div>
           <div class="status" *ngIf="status.usuarios" [class.error]="status.usuarios.type === 'error'">{{ status.usuarios.text }}</div>
           <div class="item-card" *ngIf="usuarioEncontrado"><strong>{{ usuarioEncontrado?.nombre }}</strong><p>{{ usuarioEncontrado?.email }} · {{ usuarioEncontrado?.rol }}</p><small>ID: {{ usuarioEncontrado?._id }}</small></div>

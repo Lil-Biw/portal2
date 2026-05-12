@@ -17,8 +17,19 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 let ProyectosService = class ProyectosService {
-    constructor(proyectoModel) {
+    constructor(proyectoModel, centroCostoModel) {
         this.proyectoModel = proyectoModel;
+        this.centroCostoModel = centroCostoModel;
+    }
+    async validarCentroEnCliente(cliente_id, centro_costo_id) {
+        const centro = await this.centroCostoModel.findOne({
+            _id: new mongoose_2.Types.ObjectId(centro_costo_id),
+            cliente_id: new mongoose_2.Types.ObjectId(cliente_id),
+            activo: true,
+        }).lean();
+        if (!centro) {
+            throw new common_1.BadRequestException('El centro seleccionado no pertenece a la empresa indicada');
+        }
     }
     async create(dto, creadoPor) {
         const existe = await this.proyectoModel.findOne({
@@ -27,6 +38,7 @@ let ProyectosService = class ProyectosService {
         });
         if (existe)
             throw new common_1.ConflictException(`Ya existe el código ${dto.codigo} en este centro de costos`);
+        await this.validarCentroEnCliente(dto.cliente_id, dto.centro_costo_id);
         const doc = {
             ...dto,
             fecha_inicio: dto.fecha_inicio ? new Date(dto.fecha_inicio) : undefined,
@@ -62,6 +74,12 @@ let ProyectosService = class ProyectosService {
         return proyecto;
     }
     async update(id, dto) {
+        const proyectoActual = await this.proyectoModel.findById(id).lean();
+        if (!proyectoActual)
+            throw new common_1.NotFoundException(`Proyecto ${id} no encontrado`);
+        const clienteId = dto.cliente_id || proyectoActual.cliente_id.toString();
+        const centroCostoId = dto.centro_costo_id || proyectoActual.centro_costo_id.toString();
+        await this.validarCentroEnCliente(clienteId, centroCostoId);
         const proyecto = await this.proyectoModel
             .findByIdAndUpdate(id, dto, { new: true, runValidators: true })
             .lean();
@@ -101,6 +119,8 @@ exports.ProyectosService = ProyectosService;
 exports.ProyectosService = ProyectosService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)('Proyecto')),
-    __metadata("design:paramtypes", [mongoose_2.Model])
+    __param(1, (0, mongoose_1.InjectModel)('CentroCosto')),
+    __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model])
 ], ProyectosService);
 //# sourceMappingURL=proyectos.service.js.map

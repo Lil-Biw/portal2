@@ -1,6 +1,6 @@
 export declare class PermisoUsuarioDto {
     centro_costo_id: string;
-    tipo: string;
+    tipo: 'ver' | 'editar';
 }
 export declare class CreateUsuarioDto {
     cliente_id: string;

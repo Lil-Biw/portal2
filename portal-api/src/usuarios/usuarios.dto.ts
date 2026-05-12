@@ -7,7 +7,7 @@ import { Type } from 'class-transformer';
 
 export class PermisoUsuarioDto {
   @IsMongoId() centro_costo_id: string;
-  @IsEnum(['ver', 'editar']) tipo: string;
+  @IsEnum(['ver', 'editar']) tipo: 'ver' | 'editar';
 }
 
 export class CreateUsuarioDto {

@@ -63,6 +63,7 @@ export class WorkspaceComponent {
   // Proyecto inputs
   @Input() proyectoForm: any = {};
   @Input() proyectos: any[] = [];
+  @Input() centrosProyecto: any[] = [];
   @Input() proyectoLookupId = '';
   @Input() proyectoEditId = '';
   @Input() proyectoEliminarId = '';
@@ -71,6 +72,8 @@ export class WorkspaceComponent {
   // Usuario inputs
   @Input() usuarioForm: any = {};
   @Input() usuarios: any[] = [];
+  @Input() centrosUsuario: any[] = [];
+  @Input() usuarioPermisosSeleccionados: string[] = [];
   @Input() usuarioLookupId = '';
   @Input() usuarioEditId = '';
   @Input() usuarioEliminarId = '';
@@ -143,6 +146,7 @@ export class WorkspaceComponent {
   @Output() proyectoFormChange = new EventEmitter<any>();
   @Output() proyectoLookupIdChange = new EventEmitter<string>();
   @Output() proyectoEliminarIdChange = new EventEmitter<string>();
+  @Output() proyectoClienteChange = new EventEmitter<string>();
 
   // Usuario outputs
   @Output() buscarUsuario = new EventEmitter<void>();
@@ -153,6 +157,8 @@ export class WorkspaceComponent {
   @Output() usuarioFormChange = new EventEmitter<any>();
   @Output() usuarioLookupIdChange = new EventEmitter<string>();
   @Output() usuarioEliminarIdChange = new EventEmitter<string>();
+  @Output() usuarioClienteChange = new EventEmitter<string>();
+  @Output() usuarioPermisosSeleccionadosChange = new EventEmitter<string[]>();
 
   onActionChange(action: 'crear'|'editar'|'eliminar'|'buscar') {
     this.workspaceAction = action;
@@ -191,6 +197,11 @@ export class WorkspaceComponent {
     this.proyectoFormChange.emit(this.proyectoForm);
   }
 
+  onProyectoClienteChange(clienteId: string) {
+    this.proyectoClienteChange.emit(clienteId);
+    this.proyectoFormChange.emit(this.proyectoForm);
+  }
+
   updateProyectoLookupId(id: string) {
     this.proyectoLookupIdChange.emit(id);
   }
@@ -201,6 +212,25 @@ export class WorkspaceComponent {
 
   updateUsuarioForm() {
     this.usuarioFormChange.emit(this.usuarioForm);
+  }
+
+  onUsuarioClienteChange(clienteId: string) {
+    this.usuarioClienteChange.emit(clienteId);
+    this.usuarioFormChange.emit(this.usuarioForm);
+  }
+
+  toggleUsuarioCentro(centroId: string, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const seleccionados = new Set(this.usuarioPermisosSeleccionados || []);
+
+    if (input.checked) {
+      seleccionados.add(centroId);
+    } else {
+      seleccionados.delete(centroId);
+    }
+
+    this.usuarioPermisosSeleccionados = Array.from(seleccionados);
+    this.usuarioPermisosSeleccionadosChange.emit(this.usuarioPermisosSeleccionados);
   }
 
   updateUsuarioLookupId(id: string) {

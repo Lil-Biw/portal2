@@ -12,15 +12,17 @@ const mongoose_1 = require("@nestjs/mongoose");
 const proyectos_schema_1 = require("./proyectos.schema");
 const proyectos_controller_1 = require("./proyectos.controller");
 const proyectos_service_1 = require("./proyectos.service");
-const permisos_schema_1 = require("../permisos/permisos.schema");
+const centros_costos_schema_1 = require("../centros-costos/centros-costos.schema");
 let ProyectosModule = class ProyectosModule {
 };
 exports.ProyectosModule = ProyectosModule;
 exports.ProyectosModule = ProyectosModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forFeature([{ name: 'Proyecto', schema: proyectos_schema_1.ProyectoSchema }]),
-            mongoose_1.MongooseModule.forFeature([{ name: 'Permiso', schema: permisos_schema_1.PermisoSchema }]),
+            mongoose_1.MongooseModule.forFeature([
+                { name: 'Proyecto', schema: proyectos_schema_1.ProyectoSchema },
+                { name: 'CentroCosto', schema: centros_costos_schema_1.CentroCostoSchema },
+            ]),
         ],
         controllers: [proyectos_controller_1.ProyectosController],
         providers: [proyectos_service_1.ProyectosService],

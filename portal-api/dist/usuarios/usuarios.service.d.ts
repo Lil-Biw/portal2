@@ -4,8 +4,11 @@ import { CreateUsuarioDto, UpdateUsuarioDto } from './usuarios.dto';
 import { PermisosService } from '../permisos/permisos.service';
 export declare class UsuariosService {
     private usuarioModel;
+    private centroCostoModel;
     private permisosService;
-    constructor(usuarioModel: Model<UsuarioDocument>, permisosService: PermisosService);
+    constructor(usuarioModel: Model<UsuarioDocument>, centroCostoModel: Model<any>, permisosService: PermisosService);
+    private validarCentrosDeCliente;
+    private sincronizarPermisos;
     create(dto: CreateUsuarioDto): Promise<{
         cliente_id: Types.ObjectId;
         nombre: string;
